@@ -1,29 +1,56 @@
-import * as React from "react"
-import { Link } from "gatsby"
-import { StaticImage } from "gatsby-plugin-image"
+import * as React from "react";
+import { Link, graphql } from "gatsby";
 
-import Layout from "../components/layout"
-import Seo from "../components/seo"
+import Layout from "../components/layout";
+import Seo from "../components/seo";
+import { Grid } from '@material-ui/core';
+import RecipeCard from '../components/RecipeCard/RecipeCard';
 
-const IndexPage = () => (
-  <Layout>
-    <Seo title="Home" />
-    <h1>Hi people</h1>
-    <p>Welcome to your new Gatsby site.</p>
-    <p>Now go build something great.</p>
-    <StaticImage
-      src="../images/gatsby-astronaut.png"
-      width={300}
-      quality={95}
-      formats={["AUTO", "WEBP", "AVIF"]}
-      alt="A Gatsby astronaut"
-      style={{ marginBottom: `1.45rem` }}
-    />
-    <p>
-      <Link to="/page-2/">Go to page 2</Link> <br />
-      <Link to="/using-typescript/">Go to "Using TypeScript"</Link>
-    </p>
-  </Layout>
-)
+const IndexPage = (props) => {
+  // console.log(props);
+  const recipes = props.data.recipes.edges;
 
-export default IndexPage
+  return (
+    <Layout>
+      <Grid container spacing={2}>
+        {
+          recipes.map(({node: recipe}) => (
+            <Grid item key={recipe.drupal_id} xs={6} md={4}>
+              {<RecipeCard title={ recipe.title } path={ recipe.path.alias }/>}
+              {/*{ recipe.path.alias }*/}
+            </Grid>
+          ))
+        }
+      </Grid>
+    </Layout>
+  );
+};
+
+export default IndexPage;
+
+export const query = graphql`
+  {
+    recipes: allNodeRecipe(sort: {fields: [changed], order: DESC}) {
+      edges {
+        node {
+          title
+          drupal_id
+          path {
+            alias
+          }
+          relationships {
+            field_tags {
+              name
+            }
+            field_recipe_category {
+              name
+            }
+          }
+          field_summary {
+            processed
+          }
+        }
+      }
+    }
+  }
+`;
